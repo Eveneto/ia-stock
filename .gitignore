@@ -1,0 +1,27 @@
+# Java
+*.class
+*.jar
+*.war
+*.ear
+target/
+
+# Maven
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+
+# IDEs e editores
+.idea/
+*.iml
+*.log
+.vscode/
+
+# Sistema
+.DS_Store
+
+# Docker
+*.pid
+.env
+docker-compose.override.yml
+
+# Linux
+*~
