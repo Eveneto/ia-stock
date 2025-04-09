@@ -28,8 +28,8 @@
 ---
 
 ## 🧑‍💻 Etapa 4 – Funcionalidades principais (API REST)
-- [ ] CRUD de produtos
-- [ ] Controle de estoque
+- [X] CRUD de produtos
+- [X] Controle de estoque
 - [ ] CRUD de usuários com autenticação JWT
 - [ ] Regras de negócio básicas
 - [ ] Testes unitários (JUnit)
