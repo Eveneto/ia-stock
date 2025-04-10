@@ -1,16 +1,21 @@
 package com.estoqueia.backend.controller;
 
-import com.estoqueia.backend.entity.Usuario;
-import com.estoqueia.backend.repository.UsuarioRepository;
-import com.estoqueia.backend.service.JwtService;
+// import java.util.HashMap;
+// import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import com.estoqueia.backend.entity.Usuario;
+import com.estoqueia.backend.repository.UsuarioRepository;
+import com.estoqueia.backend.service.JwtService;
 
 @RestController
 @RequestMapping("/auth")
@@ -27,6 +32,8 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registrar(@RequestBody Usuario usuario) {
+        System.out.println("Recebido para registro: " + usuario.getEmail());
+
         if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Usuário já existe");
         }
@@ -36,23 +43,34 @@ public class AuthController {
         return ResponseEntity.ok("Usuário registrado com sucesso");
     }
 
+
     @PostMapping("/login")
+    
     public ResponseEntity<?> login(@RequestBody Usuario usuario) {
+        System.out.println("🚀 Login chamado");
+        System.out.println("Email recebido: " + usuario.getEmail());
+        System.out.println("Senha recebida: " + usuario.getSenha());
+        System.out.println("Tentando login: " + usuario.getEmail());
+
         Optional<Usuario> optional = usuarioRepository.findByEmail(usuario.getEmail());
 
         if (optional.isPresent()) {
             Usuario user = optional.get();
             if (passwordEncoder.matches(usuario.getSenha(), user.getSenha())) {
                 String token = jwtService.gerarToken(user.getEmail());
-
-                Map<String, String> response = new HashMap<>();
-                response.put("token", token);
-
-                return ResponseEntity.ok(response);
+                System.out.println("🔐 Token gerado: " + token);
+                return ResponseEntity.ok("Token JWT: " + token);
             }
         }
 
         return ResponseEntity.status(401).body("Credenciais inválidas");
     }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("API funcionando!");
+    }
+
+
 }
 
