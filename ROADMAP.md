@@ -31,8 +31,8 @@
 - [X] CRUD de produtos
 - [X] Controle de estoque
 - [X] CRUD de usuários com autenticação JWT 
-- [ ] Regras de negócio básicas
-- [ ] Testes unitários (JUnit)
+- [X] Regras de negócio básicas
+- [X] Testes unitários (JUnit)
 
 ---
 
