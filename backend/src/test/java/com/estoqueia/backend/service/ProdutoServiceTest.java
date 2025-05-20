@@ -4,34 +4,36 @@ import com.estoqueia.backend.entity.Produto;
 import com.estoqueia.backend.repository.ProdutoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class ProdutoServiceTest {
 
-    @Autowired
-    private ProdutoService produtoService;
+    @Mock
+    private ProdutoRepository produtoRepository;
 
-    private ProdutoRepository produtoRepositoryMock;
+    @InjectMocks
+    private ProdutoService produtoService;
 
     @BeforeEach
     public void setUp() {
-        produtoRepositoryMock = Mockito.mock(ProdutoRepository.class);
-        produtoService = new ProdutoService(produtoRepositoryMock);
+        // No setup needed, MockitoExtension initializes mocks
     }
 
     @Test
     public void testSalvarProdutoComNomeVazio() {
         Produto produto = new Produto();
-        produto.setNome("");  // Nome vazio
+        produto.setNome("");
         produto.setPreco(BigDecimal.TEN);
         produto.setQuantidade(10);
 
@@ -43,7 +45,7 @@ public class ProdutoServiceTest {
     public void testSalvarProdutoComPrecoNegativo() {
         Produto produto = new Produto();
         produto.setNome("Produto Teste");
-        produto.setPreco(BigDecimal.valueOf(-1));  // Preço negativo
+        produto.setPreco(BigDecimal.valueOf(-1));
         produto.setQuantidade(10);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> produtoService.salvar(produto));
@@ -55,7 +57,7 @@ public class ProdutoServiceTest {
         Produto produto = new Produto();
         produto.setNome("Produto Teste");
         produto.setPreco(BigDecimal.TEN);
-        produto.setQuantidade(-1);  // Quantidade negativa
+        produto.setQuantidade(-1);
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> produtoService.salvar(produto));
         assertEquals("Preço e quantidade não podem ser negativos", exception.getMessage());
@@ -68,8 +70,7 @@ public class ProdutoServiceTest {
         produto.setPreco(BigDecimal.TEN);
         produto.setQuantidade(10);
 
-        // Simulando que já existe um produto com o mesmo nome no banco de dados
-        Mockito.when(produtoRepositoryMock.findAll()).thenReturn(List.of(produto));
+        when(produtoRepository.findAll()).thenReturn(List.of(produto));
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> produtoService.salvar(produto));
         assertEquals("Produto com este nome já existe", exception.getMessage());
@@ -78,11 +79,12 @@ public class ProdutoServiceTest {
     @Test
     public void testEntradaEstoqueComQuantidadeNegativa() {
         Produto produto = new Produto();
+        produto.setId(1L);
         produto.setNome("Produto Teste");
         produto.setPreco(BigDecimal.TEN);
         produto.setQuantidade(10);
 
-        Mockito.when(produtoRepositoryMock.findById(1L)).thenReturn(Optional.of(produto));
+        when(produtoRepository.findById(1L)).thenReturn(Optional.of(produto));
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> produtoService.entradaEstoque(1L, -5));
         assertEquals("Quantidade de entrada deve ser positiva", exception.getMessage());
@@ -91,11 +93,12 @@ public class ProdutoServiceTest {
     @Test
     public void testSaidaEstoqueComQuantidadeInsuficiente() {
         Produto produto = new Produto();
+        produto.setId(1L);
         produto.setNome("Produto Teste");
         produto.setPreco(BigDecimal.TEN);
         produto.setQuantidade(5);
 
-        Mockito.when(produtoRepositoryMock.findById(1L)).thenReturn(Optional.of(produto));
+        when(produtoRepository.findById(1L)).thenReturn(Optional.of(produto));
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> produtoService.saidaEstoque(1L, 10));
         assertEquals("Quantidade em estoque insuficiente", exception.getMessage());
@@ -104,13 +107,15 @@ public class ProdutoServiceTest {
     @Test
     public void testSaidaEstoqueComQuantidadePositiva() {
         Produto produto = new Produto();
+        produto.setId(1L);
         produto.setNome("Produto Teste");
         produto.setPreco(BigDecimal.TEN);
         produto.setQuantidade(10);
 
-        Mockito.when(produtoRepositoryMock.findById(1L)).thenReturn(Optional.of(produto));
+        when(produtoRepository.findById(1L)).thenReturn(Optional.of(produto));
 
         produtoService.saidaEstoque(1L, 5);
         assertEquals(5, produto.getQuantidade());
+        verify(produtoRepository, times(1)).save(produto);
     }
 }

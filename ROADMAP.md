@@ -40,7 +40,7 @@
 - [X] Escolher estratégia (TensorFlow / microserviço Python)
 - [X] Criar endpoint de sugestão inteligente de compra/reposição
 - [X] Treinar modelo com dados simulados
-- [ ] Refinar os dados e salvar o modelo definitivo 
+- [X] Refinar os dados e salvar o modelo definitivo 
 - [ ] Integrar IA ao backend
 - [ ] Avaliar resultados com dados reais e ajustar o modelo caso necessário
 
