@@ -1,0 +1,28 @@
+# Ignorar arquivos de build local
+target/
+.mvn/
+mvnw
+mvnw.cmd
+
+# Ignorar arquivos do IDE
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Ignorar arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar logs
+*.log
+logs/
+
+# Ignorar arquivos temporários
+*.tmp
+*.temp
+*~
+
+# Ignorar arquivos de backup
+*.bak

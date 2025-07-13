@@ -1,0 +1,40 @@
+# Ignorar ambiente virtual
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Ignorar arquivos do IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Ignorar arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar arquivos de teste
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Ignorar logs
+*.log
+logs/
+
+# Ignorar arquivos temporários
+*.tmp
+*.temp
+*~
+
+# Ignorar arquivos de backup
+*.bak
+
+# Ignorar arquivos de configuração local
+.env
+.env.local

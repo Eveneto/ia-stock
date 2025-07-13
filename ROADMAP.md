@@ -47,9 +47,9 @@
 ---
 
 ## 🐳 Etapa 6 – Dockerização do Backend
-- [ ] Criar Dockerfile para o backend
-- [ ] Criar docker-compose.yml com banco e backend
-- [ ] Testar orquestração com containers
+- [X] Criar Dockerfile para o backend
+- [X] Criar docker-compose.yml com banco e backend
+- [X] Testar orquestração com containers
 
 ---
 
