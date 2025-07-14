@@ -1,0 +1,11 @@
+mat-card {
+  @apply transition-all duration-300 hover:shadow-lg cursor-pointer;
+}
+
+mat-icon {
+  @apply opacity-80;
+}
+
+button {
+  @apply transition-all duration-200;
+}
