@@ -54,10 +54,10 @@
 ---
 
 ## 🧪 Etapa 7 – Testes e Documentação
-- [ ] Criar testes de integração
-- [ ] Documentar endpoints com Swagger/OpenAPI
-- [ ] Criar script de carga de dados fake
-- [ ] Escrever documentação do projeto
+- [ ] Criar testes de integração (ADIADO)
+- [X] Documentar endpoints com Swagger/OpenAPI
+- [X] Criar script de carga de dados fake
+- [X] Escrever documentação do projeto
 
 ---
 

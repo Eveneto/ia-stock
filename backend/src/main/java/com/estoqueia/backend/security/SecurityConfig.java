@@ -39,7 +39,20 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**", "/api/estoque/sugestao").permitAll()
+                // Endpoints de autenticação
+                .requestMatchers("/auth/**").permitAll()
+                
+                // Endpoints da IA
+                .requestMatchers("/api/estoque/sugestao").permitAll()
+                
+                // 🔧 SWAGGER ENDPOINTS - ADICIONAR ESTAS LINHAS
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/swagger-ui.html").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/swagger-resources/**").permitAll()
+                .requestMatchers("/webjars/**").permitAll()
+                
+                // Todos os outros endpoints requerem autenticação
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
