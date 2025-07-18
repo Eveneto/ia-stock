@@ -1,0 +1,43 @@
+mat-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+mat-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+mat-chip {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+mat-chip[highlighted] {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.mat-mdc-table {
+  font-size: 0.875rem;
+}
+
+.mat-mdc-header-cell {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.mat-mdc-row:hover {
+  background-color: #eff6ff;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+mat-icon[matSuffix] {
+  color: #9ca3af;
+}

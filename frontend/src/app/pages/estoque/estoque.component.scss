@@ -1,0 +1,52 @@
+mat-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+}
+
+mat-tab-group {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mat-mdc-tab-body-content {
+  overflow: visible;
+}
+
+.bg-gradient-to-r {
+  background: linear-gradient(to right, #f8fafc, #e0e7ff);
+}
+
+mat-card-header {
+  padding-bottom: 0.5rem;
+}
+
+.mat-mdc-table {
+  font-size: 0.875rem;
+}
+
+.mat-mdc-header-cell {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.mat-mdc-row:hover {
+  background-color: #f9fafb;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+mat-select, mat-input {
+  font-size: 0.875rem;
+}
+
+button[mat-raised-button] {
+  font-weight: 600;
+}
+
+button[mat-stroked-button] {
+  font-weight: 500;
+}
