@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 export interface Produto {
   id?: number;
@@ -341,43 +341,57 @@ export class ApiService {
     });
   }
 
-  // 🔧 MÉTODO PARA OBTER SUGESTÕES DA IA (FALLBACK)
+  // 🔧 MÉTODO PARA OBTER SUGESTÕES DA IA (REAL + FALLBACK)
   obterSugestaoIA(produtoId: number, mediaVendas: number = 3, diasCompra: number = 7): Observable<any> {
     if (!this.apiDisponivel) {
-      // Simular resposta da IA
-      const produto = this.produtosFictícios.find(p => p.id === produtoId);
-      if (produto) {
-        const sugestao = {
-          sugestaoReposicao: Math.max(20 - produto.quantidade, 5),
-          observacao: `Baseado na análise de dados, recomendamos repor ${Math.max(20 - produto.quantidade, 5)} unidades.`,
-          confianca: 0.85 + (Math.random() * 0.1)
-        };
-        return of(sugestao);
-      } else {
-        return throwError(() => new Error('Produto não encontrado'));
-      }
+      console.warn('⚠️ API offline, usando fallback local');
+      return this.gerarSugestaoLocal(produtoId);
     }
 
-    return this.http.post<any>(`${this.baseUrl}/api/estoque/sugestao`, {
-      produtoId,
-      mediaVendasDiarias: mediaVendas,
-      diasParaProximaCompra: diasCompra
-    }).pipe(
-      catchError((error: HttpErrorResponse) => {
-        console.warn('⚠️ API de IA indisponível, gerando sugestão local');
-        this.apiDisponivel = false;
-        const produto = this.produtosFictícios.find(p => p.id === produtoId);
-        if (produto) {
-          const sugestao = {
-            sugestaoReposicao: Math.max(20 - produto.quantidade, 5),
-            observacao: `Baseado na análise local, recomendamos repor ${Math.max(20 - produto.quantidade, 5)} unidades.`,
-            confianca: 0.80
-          };
-          return of(sugestao);
-        } else {
-          return throwError(() => new Error('Produto não encontrado'));
-        }
-      })
-    );
+    // ✅ CHAMADA REAL PARA O BACKEND
+    const params = new HttpParams()
+      .set('produtoId', produtoId.toString())
+      .set('mediaVendasDiarias', mediaVendas.toString())
+      .set('diasParaProximaCompra', diasCompra.toString());
+
+    console.log('🤖 Consultando IA real para produto ID:', produtoId);
+
+    return this.http.post<any>(`${this.baseUrl}/api/estoque/sugestao`, null, { params })
+      .pipe(
+        map(response => ({
+          sugestaoReposicao: response.sugestaoReposicao,
+          observacao: response.observacao,
+          prioridade: this.calcularPrioridade(response.sugestaoReposicao)
+        })),
+        catchError((error: HttpErrorResponse) => {
+          console.warn('⚠️ IA indisponível, usando fallback local:', error.message);
+          return this.gerarSugestaoLocal(produtoId);
+        })
+      );
+  }
+
+  // 🔧 FALLBACK LOCAL
+  private gerarSugestaoLocal(produtoId: number): Observable<any> {
+    const produto = this.produtosFictícios.find(p => p.id === produtoId);
+    if (!produto) {
+      return throwError(() => new Error('Produto não encontrado'));
+    }
+
+    const sugestaoReposicao = Math.max(20 - produto.quantidade, 5);
+    const sugestao = {
+      sugestaoReposicao: sugestaoReposicao,
+      observacao: `[FALLBACK] Baseado em regra simples: manter estoque em 20 unidades. Sugerimos repor ${sugestaoReposicao} unidades.`,
+      prioridade: this.calcularPrioridade(sugestaoReposicao)
+    };
+
+    console.log('🔄 Sugestão local gerada:', sugestao);
+    return of(sugestao);
+  }
+
+  // 🔧 CALCULAR PRIORIDADE
+  private calcularPrioridade(sugestaoReposicao: number): 'ALTA' | 'MEDIA' | 'BAIXA' {
+    if (sugestaoReposicao > 15) return 'ALTA';
+    if (sugestaoReposicao > 8) return 'MEDIA';
+    return 'BAIXA';
   }
 }

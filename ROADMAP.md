@@ -64,9 +64,9 @@
 ## 🎨 Etapa 8 – Desenvolvimento do Frontend (Angular + Tailwind)
 - [X] Criar estrutura do projeto Angular
 - [X] Criar telas: login, dashboard, produtos, estoque
-- [ ] Integrar com API REST
-- [ ] Adicionar feedbacks visuais e UX
-- [ ] Exibir dados e sugestões da IA
+- [X] Integrar com API REST
+- [X] Adicionar feedbacks visuais e UX
+- [X] Exibir dados e sugestões da IA
 
 ---
 

@@ -9,9 +9,151 @@ import { MatInputModule } from '@angular/material/input';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialogModule, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService, Produto } from '../../services/api.service';
 
+// 🔧 COMPONENTE DE MODAL PARA CRIAR/EDITAR PRODUTO
+@Component({
+  selector: 'app-produto-modal',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    ReactiveFormsModule,
+    MatDialogModule
+  ],
+  template: `
+    <div class="p-6">
+      <h2 class="text-2xl font-bold mb-4">
+        {{produto?.id ? '✏️ Editar Produto' : '➕ Novo Produto'}}
+      </h2>
+      
+      <form [formGroup]="produtoForm" (ngSubmit)="salvar()">
+        <div class="grid grid-cols-1 gap-4">
+          <mat-form-field>
+            <mat-label>Nome do Produto</mat-label>
+            <input matInput formControlName="nome" placeholder="Ex: Notebook Dell Inspiron">
+            <mat-error *ngIf="produtoForm.get('nome')?.hasError('required')">
+              Nome é obrigatório
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field>
+            <mat-label>Descrição</mat-label>
+            <textarea matInput formControlName="descricao" rows="3" 
+                      placeholder="Descrição detalhada do produto..."></textarea>
+          </mat-form-field>
+
+          <div class="grid grid-cols-2 gap-4">
+            <mat-form-field>
+              <mat-label>Preço</mat-label>
+              <input matInput type="number" formControlName="preco" step="0.01" min="0" placeholder="0.00">
+              <span matSuffix>R$</span>
+              <mat-error *ngIf="produtoForm.get('preco')?.hasError('required')">
+                Preço é obrigatório
+              </mat-error>
+              <mat-error *ngIf="produtoForm.get('preco')?.hasError('min')">
+                Preço deve ser maior que zero
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>Quantidade</mat-label>
+              <input matInput type="number" formControlName="quantidade" min="0" placeholder="0">
+              <span matSuffix>un</span>
+              <mat-error *ngIf="produtoForm.get('quantidade')?.hasError('required')">
+                Quantidade é obrigatória
+              </mat-error>
+              <mat-error *ngIf="produtoForm.get('quantidade')?.hasError('min')">
+                Quantidade não pode ser negativa
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <button type="button" mat-button (click)="cancelar()">
+            <mat-icon>close</mat-icon>
+            Cancelar
+          </button>
+          <button type="submit" mat-raised-button color="primary" 
+                  [disabled]="!produtoForm.valid || salvando">
+            <mat-icon>{{salvando ? 'hourglass_empty' : 'save'}}</mat-icon>
+            {{salvando ? 'Salvando...' : 'Salvar'}}
+          </button>
+        </div>
+      </form>
+    </div>
+  `
+})
+export class ProdutoModalComponent implements OnInit {
+  produtoForm: FormGroup;
+  produto?: Produto;
+  salvando = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private dialogRef: MatDialogRef<ProdutoModalComponent>, // ✅ CORRIGIDO: Usar MatDialogRef
+    private apiService: ApiService,
+    private snackBar: MatSnackBar
+  ) {
+    this.produtoForm = this.fb.group({
+      nome: ['', [Validators.required]],
+      descricao: [''],
+      preco: [0, [Validators.required, Validators.min(0.01)]],
+      quantidade: [0, [Validators.required, Validators.min(0)]]
+    });
+  }
+
+  ngOnInit() {
+    if (this.produto) {
+      this.produtoForm.patchValue({
+        nome: this.produto.nome,
+        descricao: this.produto.descricao,
+        preco: this.produto.preco,
+        quantidade: this.produto.quantidade
+      });
+    }
+  }
+
+  salvar() {
+    if (this.produtoForm.valid) {
+      this.salvando = true;
+      const dadosProduto = this.produtoForm.value;
+
+      const operacao = this.produto?.id 
+        ? this.apiService.atualizarProduto(this.produto.id, dadosProduto)
+        : this.apiService.criarProduto(dadosProduto);
+
+      operacao.subscribe({
+        next: (produto) => {
+          this.snackBar.open(
+            `✅ Produto ${this.produto?.id ? 'atualizado' : 'criado'} com sucesso!`, 
+            'Fechar', 
+            { duration: 3000 }
+          );
+          this.dialogRef.close(produto);
+        },
+        error: (error) => {
+          console.error('❌ Erro ao salvar produto:', error);
+          this.snackBar.open('❌ Erro ao salvar produto', 'Fechar', { duration: 3000 });
+          this.salvando = false;
+        }
+      });
+    }
+  }
+
+  cancelar() {
+    this.dialogRef.close();
+  }
+}
+
+// 🔧 COMPONENTE PRINCIPAL ATUALIZADO
 @Component({
   selector: 'app-produtos',
   standalone: true,
@@ -25,7 +167,8 @@ import { ApiService, Produto } from '../../services/api.service';
     MatInputModule,
     MatChipsModule,
     MatSnackBarModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatDialogModule
   ],
   template: `
     <div class="p-6">
@@ -39,6 +182,11 @@ import { ApiService, Produto } from '../../services/api.service';
           <button mat-button (click)="voltarDashboard()" class="mr-2">
             <mat-icon>arrow_back</mat-icon>
             Voltar
+          </button>
+          <!-- ✅ BOTÃO PARA CRIAR NOVO PRODUTO -->
+          <button mat-raised-button color="accent" (click)="criarProduto()">
+            <mat-icon>add</mat-icon>
+            Novo Produto
           </button>
           <button mat-raised-button color="primary" (click)="carregarProdutos()">
             <mat-icon>refresh</mat-icon>
@@ -119,13 +267,13 @@ import { ApiService, Produto } from '../../services/api.service';
             <ng-container matColumnDef="acoes">
               <th mat-header-cell *matHeaderCellDef class="font-semibold">Ações</th>
               <td mat-cell *matCellDef="let produto">
-                <button mat-icon-button color="primary" (click)="editarProduto(produto)" matTooltip="Editar">
+                <button mat-icon-button color="primary" (click)="editarProduto(produto); $event.stopPropagation()" matTooltip="Editar">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="accent" (click)="verEstoque(produto)" matTooltip="Ver Estoque">
+                <button mat-icon-button color="accent" (click)="verEstoque(produto); $event.stopPropagation()" matTooltip="Ver Estoque">
                   <mat-icon>inventory</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="excluirProduto(produto)" matTooltip="Excluir">
+                <button mat-icon-button color="warn" (click)="excluirProduto(produto); $event.stopPropagation()" matTooltip="Excluir">
                   <mat-icon>delete</mat-icon>
                 </button>
               </td>
@@ -141,7 +289,11 @@ import { ApiService, Produto } from '../../services/api.service';
         <div *ngIf="produtosFiltrados.length === 0 && !loading" class="text-center py-12">
           <mat-icon class="text-gray-400 text-6xl mb-4">inventory_2</mat-icon>
           <p class="text-gray-500 text-lg">Nenhum produto encontrado</p>
-          <p class="text-gray-400 text-sm mt-2">Crie produtos usando o Swagger: http://localhost:8080/swagger-ui.html</p>
+          <p class="text-gray-400 text-sm mt-2 mb-4">Comece criando seu primeiro produto!</p>
+          <button mat-raised-button color="primary" (click)="criarProduto()">
+            <mat-icon>add</mat-icon>
+            Criar Primeiro Produto
+          </button>
         </div>
       </mat-card>
     </div>
@@ -157,7 +309,8 @@ export class ProdutosComponent implements OnInit {
   constructor(
     private router: Router,
     private apiService: ApiService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -203,14 +356,40 @@ export class ProdutosComponent implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
+  // ✅ IMPLEMENTAR CRIAÇÃO DE PRODUTO
+  criarProduto() {
+    const dialogRef = this.dialog.open(ProdutoModalComponent, {
+      width: '600px',
+      disableClose: false
+    });
+
+    dialogRef.componentInstance.produto = undefined; // Novo produto
+
+    dialogRef.afterClosed().subscribe(produto => {
+      if (produto) {
+        this.carregarProdutos(); // Recarregar lista
+      }
+    });
+  }
+
+  // ✅ IMPLEMENTAR EDIÇÃO REAL
   editarProduto(produto: Produto) {
-    this.snackBar.open(`Editar produto: ${produto.nome} (Implementar modal)`, 'Fechar', {
-      duration: 3000
+    const dialogRef = this.dialog.open(ProdutoModalComponent, {
+      width: '600px',
+      disableClose: false
+    });
+
+    dialogRef.componentInstance.produto = produto; // Produto existente
+
+    dialogRef.afterClosed().subscribe(produtoAtualizado => {
+      if (produtoAtualizado) {
+        this.carregarProdutos(); // Recarregar lista
+      }
     });
   }
 
   verEstoque(produto: Produto) {
-    this.router.navigate(['/estoque']); // Navegar para página de estoque
+    this.router.navigate(['/estoque']);
   }
 
   verDetalhes(produto: Produto) {
